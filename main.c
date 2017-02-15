@@ -100,9 +100,9 @@ void loadFileData(float *windSpeeds, size_t arraySize) {
         //printf("Data %d is: %f\n", index, windSpeeds[index]);
 
         fclose(inputPtr); //When finished, Close the file.
-    }
+    }//End if/else
 
-}
+}//End function loadFileData
 
 /**
  * Function bubbleSort
@@ -165,54 +165,76 @@ void insertionSort(float unsortedArray[], size_t arraySize) {
     unsigned int copyCount = 0;     //Counter to track the number of data item copies required to complete this task.
     unsigned int insertionCount = 0;//Counter to track the number of data item insertions required to complete this task.
 
-    size_t in;
+    size_t in, out;                 //Array iterators for outer and inner loops
 
-    for (size_t out = 1; out < arraySize; out++) {
+    //Leaving the first item in place, Mark the next item and work my way through the list...
+    for (out = 1; out < arraySize; out++) {
+        copyCount++;                        //For every copy, increment the copyCount counter
+        float temp = unsortedArray[out];    //Make a copy of the marked item; allowing a space to shift items into.
+        in = out;                           //Set the target for my inner loop
 
-        float temp = unsortedArray[out]; //remove market item //Why not 0??
-        in = out;
+        //Check the location is not ZERO and the data item before the current
+        //position has a higher value than the value I'm trying to place. (ie. UnOrdered)
+        //I want to determine, into what position do I need to insert my temp value...
+        while (in > 0 && unsortedArray[in - 1] >= temp) {   //If TRUE, then I need to find the correct place for my value.
+            copyCount++;                    //For every copy, increment the copyCount counter
+            unsortedArray[in] = unsortedArray[in - 1];  //Shift the previous data value, to my current position.
+            --in;                           //Move my iterator to target the previous location
+        }   //Back to the While condition to check my new position's value.
+        insertionCount++;                   //For every insertion, increment the insertionCount counter.
+        unsortedArray[in] = temp;           //Once the above loop has found the correct position, Insert my value.
 
-        while (in > 0 && unsortedArray[in - 1] >= temp) {
-            copyCount++;
-            unsortedArray[in] = unsortedArray[in - 1];
-            --in;
-        }
-        insertionCount++;
-        unsortedArray[in] = temp;
+    } //Move on the the next start position in the Array.
 
+    clock_t finishTime = clock();           //Variable to hold the number of ticks at the end of this function.
 
-    }
-    clock_t finishTime = clock();
-
+    //Print statistics...
     printf("Insertion Sort completed after \t%f seconds, with %7u data copies and %8u data insertions.\n",
            (double) (finishTime - startTime) / CLOCKS_PER_SEC, copyCount, insertionCount);
 
-}
+}//End function insertionSort
 
 
+/**
+ * Function writeSortedDataToFile
+ * This function takes in a reference to an Array and it's size and writes this data to a file.
+ * The filename is controlled by the pre-processor constant SORTED_OUTPUT_FILE.
+ *
+ * @param dataToWriteToFile - A reference to the source data Array
+ * @param arraySize - The Size of the Array to process
+ */
+void writeSortedDataToFile(float dataToWriteToFile[], size_t arraySize) {
+    FILE *outputFile;//A pointer to an Output file
 
-void writeSortedDataToFile(float dataToWriteToFile[], size_t size) {
-    FILE *outputFile;
-
-    if ((outputFile = fopen(SORTED_OUTPUT_FILE, "w")) == NULL) {
+    //Try open the file...
+    if ((outputFile = fopen(SORTED_OUTPUT_FILE, "w")) == NULL) {//Opening Failed?
         puts("Failed to Open file for Writing!");
-    } else {
-        for (size_t index = 0; index < size; index++) {
+        //Perhaps add some better Error Handling in the future?
+    } else {//Opening Success!
+        for (size_t index = 0; index < arraySize; index++) {         //Iterate through the Array
+            //For each item, send the data and a newline character to the Output Pointer...
             fprintf(outputFile, "%f\n", dataToWriteToFile[index]);
-        }
-    }
+        }//Next iteration
+    }//End if/else
 
-    fclose(outputFile);
+    fclose(outputFile); //Close the file.
 
-}
+}//End function writeSortedDataToFile
 
+/**
+ * Function printArrayContent
+ * Test function to confirm content of array.
+ *
+ * @param arrayToPrint - Array to test
+ * @param arraySize - The Size of the Array to process
+ */
+void printArrayContent(float arrayToPrint[], size_t arraySize) {
 
-void printArrayContent(float windSpeeds[], size_t arraySize) {
+    float *arrayPtr;            //Trying to figure out Pointer notation
+    arrayPtr = arrayToPrint;    //Array names ARE Pointers???
+    for (size_t index = 0; index < arraySize; index++) {    //Iterate through the array
+        //Print the value referenced by the pointer, then increment the pointer.
+        printf("%d: %f\n", index + 1, *(arrayPtr++));   //There is probably a better way to do this...but it was just for a test.
+    }//Next iteration
 
-    float *arrayPtr;
-    arrayPtr = windSpeeds;
-    for (size_t index = 0; index < arraySize; index++) {
-        printf("%d: %f\n", index + 1, *(arrayPtr++));
-    }
-
-}
+}//End function printArrayContent
