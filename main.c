@@ -18,7 +18,7 @@
 #define SORTED_OUTPUT_FILE "../sortedData.dat"
 
 //Function Prototypes
-void loadFileData(float *windSpeeds, size_t arraySize);
+void loadFileData(float arrayToStoreData[], size_t arraySize);
 void bubbleSort(float unsortedArray[], size_t arraySize);
 void insertionSort(float unsortedArray[], size_t arraySize);
 void writeSortedDataToFile(float dataToWriteToFile[], size_t arraySize);
@@ -63,7 +63,7 @@ int main() {
  * @param windSpeeds - A memory reference to the data array to be populated.
  * @param arraySize - The size of the array to control bounds
  */
-void loadFileData(float *windSpeeds, size_t arraySize) {
+void loadFileData(float arrayToStoreData[], size_t arraySize) {
 
     FILE *inputPtr;     //A pointer to an input file
 
@@ -82,7 +82,7 @@ void loadFileData(float *windSpeeds, size_t arraySize) {
             //Strings are in the following format... "9/22/2013,00:01,3.9758"
             strtok(buffer, " ,");   //Dump first token, ie. '9/22/2013'
             strtok(NULL, " ,");    //Dump next token, ie. '00:01'
-            windSpeeds[index++] = strtof((strtok(NULL, " ,")), NULL);   //Store the 3rd token, as a float, into the array.
+            arrayToStoreData[index++] = strtof((strtok(NULL, " ,")), NULL);   //Store the 3rd token, as a float, into the array.
 
             ////TESTING
             //printf("Data %d is: %f\n", index - 1, windSpeeds[index-1]);
@@ -94,7 +94,7 @@ void loadFileData(float *windSpeeds, size_t arraySize) {
         //If the inputPtr contains the EOF character, the while loop finishes and we add the last piece of data...
         strtok(buffer, " ,");   //Dump first token, ie. '9/22/2013'
         strtok(NULL, " ,");    //Dump next token, ie. '00:01'
-        windSpeeds[index] = strtof((strtok(NULL, " ,")), NULL);     //Store the 3rd token, as a float, into the array.
+        arrayToStoreData[index] = strtof((strtok(NULL, " ,")), NULL);     //Store the 3rd token, as a float, into the array.
 
         ////TESTING
         //printf("Data %d is: %f\n", index, windSpeeds[index]);
