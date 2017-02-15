@@ -19,10 +19,10 @@
 
 //Function Prototypes
 void loadFileData(float *windSpeeds, size_t arraySize);
-void bubbleSort(float unsortedArray[]);
-void insertionSort(float unsortedArray[]);
-void writeSortedDataToFile(float dataToWriteToFile[], size_t i);
-void printArrayContent(float arrayToPrint[]);
+void bubbleSort(float unsortedArray[], size_t arraySize);
+void insertionSort(float unsortedArray[], size_t arraySize);
+void writeSortedDataToFile(float dataToWriteToFile[], size_t arraySize);
+void printArrayContent(float arrayToPrint[], size_t arraySize);
 
 
 int main() {
@@ -40,8 +40,8 @@ int main() {
 
 
     ////Requirement #3, Run both instrumented algorithms with the wind speed data.
-    bubbleSort(windSpeedsForBubble);    //Sort date using Bubble Sort algorithm
-    insertionSort(windSpeedsForInsert); //Sort date using Insert Sort algorithm
+    bubbleSort(windSpeedsForBubble, NUMBER_OF_DATAPOINTS);    //Sort date using Bubble Sort algorithm
+    insertionSort(windSpeedsForInsert, NUMBER_OF_DATAPOINTS); //Sort date using Insert Sort algorithm
 
 
     ////Requirement #4, Save the sorted data in a new file to be used in Question 2.
@@ -55,26 +55,34 @@ int main() {
 
 }//End of main()
 
-
+/**
+ * Function loadFileData
+ * This function is tasked with reading in the content of a datafile containing wind speeds in a comma separated format.
+ * The data is in the format... 9/22/2013,00:01,3.9758
+ *
+ * @param windSpeeds - A memory reference to the data array to be populated.
+ * @param arraySize - The size of the array to control bounds
+ */
 void loadFileData(float *windSpeeds, size_t arraySize) {
 
     FILE *inputPtr;     //A pointer to an input file
 
     //Try open the file...
     if ((inputPtr = fopen(RAW_DATA_FILE, "r")) == NULL) { //Opening Failed?
-        puts("The file could not be opened!");
+        puts("FATAL ERROR! - The file could not be opened!");
+        exit(1);    //Quit the program
 
     } else {    //Opening Success!
         size_t index = 0;                   //A counter to iterate through the array.
         char buffer[INPUT_BUFFER] = "";     //A buffer to accept a line read in from the input file.
 
-        fscanf(inputPtr, "%s", buffer);    //Read in the first line of the file
-        while (!feof(inputPtr) && index < arraySize) {  //Once there is data and we have'nt exceeded our array
+        fscanf(inputPtr, "%s", buffer);     //Read in the first line of the file
+        while (!feof(inputPtr) && index < arraySize) {  //Once there is data and we have'nt exceeded our array bounds...
 
             //Strings are in the following format... "9/22/2013,00:01,3.9758"
             strtok(buffer, " ,");   //Dump first token, ie. '9/22/2013'
             strtok(NULL, " ,");    //Dump next token, ie. '00:01'
-            windSpeeds[index++] = strtof((strtok(NULL, " ,")), NULL);
+            windSpeeds[index++] = strtof((strtok(NULL, " ,")), NULL);   //Store the 3rd token, as a float, into the array.
 
             ////TESTING
             //printf("Data %d is: %f\n", index - 1, windSpeeds[index-1]);
@@ -86,21 +94,29 @@ void loadFileData(float *windSpeeds, size_t arraySize) {
         //If the inputPtr contains the EOF character, the while loop finishes and we add the last piece of data...
         strtok(buffer, " ,");   //Dump first token, ie. '9/22/2013'
         strtok(NULL, " ,");    //Dump next token, ie. '00:01'
-        windSpeeds[index] = strtof((strtok(NULL, " ,")), NULL);
+        windSpeeds[index] = strtof((strtok(NULL, " ,")), NULL);     //Store the 3rd token, as a float, into the array.
+
         ////TESTING
         //printf("Data %d is: %f\n", index, windSpeeds[index]);
-
 
         fclose(inputPtr); //When finished, Close the file.
     }
 
 }
 
-void bubbleSort(float unsortedArray[]) {
+/**
+ * Function bubbleSort
+ * This function takes in a reference to an Unsorted array and sorts its data in ascending order.
+ * Largely based on the example from (Deitel, 2013) Fig 6.15.
+ *
+ * @param unsortedArray - The unsorted array to sort
+ * @param arraySize - The Size of the Array to process
+ */
+void bubbleSort(float unsortedArray[], size_t arraySize) {
 
-    clock_t startTime = clock();
-    unsigned int swapCount = 0;
-    unsigned int comparisonCount = 0;
+    clock_t startTime = clock();    //Variable to hold the number of ticks at the start of this function
+    unsigned int swapCount = 0;     //Counter to track the number of data item swaps required to complete this task.
+    unsigned int comparisonCount = 0;   //Counter to track the number of data item comparisons required to complete this task.
 
 
     /* initialize a */
@@ -110,42 +126,48 @@ void bubbleSort(float unsortedArray[]) {
 
     /* bubble sort */
     /* loop to control number of passes */
-    for (pass = 1; pass < NUMBER_OF_DATAPOINTS; pass++) {
+    for (pass = 1; pass < arraySize; pass++) {
 
         /* loop to control number of comparisons per pass */
-        for (i = 0; i < NUMBER_OF_DATAPOINTS - 1; i++) {
+        for (i = 0; i < arraySize - 1; i++) {
+            comparisonCount++;  //For every comparison, increment the comparisonCount counter
 
             /* compare adjacent elements and swap them if first
             element is greater than second element */
-            comparisonCount++;
             if (unsortedArray[i] > unsortedArray[i + 1]) {
-                swapCount++;
-                hold = unsortedArray[i];
-                unsortedArray[i] = unsortedArray[i + 1];
-                unsortedArray[i + 1] = hold;
+                swapCount++;    //For every swap, increment the swapCount counter
+                hold = unsortedArray[i];    //Place a data item into temp storage
+                unsortedArray[i] = unsortedArray[i + 1];    //Put the item from position 'i+1', into position 'i'
+                unsortedArray[i + 1] = hold;    //Put the item we have in temp storage, originally
+                                                //from position 'i', back into position 'i+1'.
+                                                //Swap complete :)
             } /* end if */
         } /* end inner for */
     } /* end outer for */
 
-    clock_t finishTime = clock();
+    clock_t finishTime = clock();   //Variable to hold the number of ticks at the end of this function.
 
+    //Print statistics...
     printf("Bubble Sort completed after \t%f seconds, with %7u data swaps and  %8u data comparisons.\n",
            (double) (finishTime - startTime) / CLOCKS_PER_SEC, swapCount, comparisonCount);
 
-    //printf("Time taken for Bubble Sort was: %f!\n\n\n", (double)(finishTime - startTime) / CLOCKS_PER_SEC);
+}//End of function bubbleSort
 
-}
+/**
+ * Function insertSort
+ * This function takes in a reference to an Unsorted array and sorts its data in ascending order.
+ *
+ * @param unsortedArray - The unsorted array to sort
+ * @param arraySize - The Size of the Array to process
+ */
+void insertionSort(float unsortedArray[], size_t arraySize) {
+    clock_t startTime = clock();    //Variable to hold the number of ticks at the start of this function
+    unsigned int copyCount = 0;     //Counter to track the number of data item copies required to complete this task.
+    unsigned int insertionCount = 0;//Counter to track the number of data item insertions required to complete this task.
 
+    size_t in;
 
-void insertionSort(float unsortedArray[]) {
-    clock_t startTime = clock();
-    unsigned int copyCount = 0;
-    unsigned int insertionCount = 0;
-
-
-    size_t in, out;
-
-    for (out = 1; out < NUMBER_OF_DATAPOINTS; out++) {
+    for (size_t out = 1; out < arraySize; out++) {
 
         float temp = unsortedArray[out]; //remove market item //Why not 0??
         in = out;
@@ -164,7 +186,6 @@ void insertionSort(float unsortedArray[]) {
 
     printf("Insertion Sort completed after \t%f seconds, with %7u data copies and %8u data insertions.\n",
            (double) (finishTime - startTime) / CLOCKS_PER_SEC, copyCount, insertionCount);
-    //printf("Time taken for Insertion Sort was: %f!\n\n\n", (double)(finishTime - startTime) / CLOCKS_PER_SEC);
 
 }
 
@@ -186,11 +207,11 @@ void writeSortedDataToFile(float dataToWriteToFile[], size_t size) {
 }
 
 
-void printArrayContent(float windSpeeds[]) {
+void printArrayContent(float windSpeeds[], size_t arraySize) {
 
     float *arrayPtr;
     arrayPtr = windSpeeds;
-    for (size_t index = 0; index < NUMBER_OF_DATAPOINTS; index++) {
+    for (size_t index = 0; index < arraySize; index++) {
         printf("%d: %f\n", index + 1, *(arrayPtr++));
     }
 
